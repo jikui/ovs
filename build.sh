@@ -5,8 +5,11 @@ if [ $# -gt 0 ]; then
     ./boot.sh
     ./configure --with-linux=/lib/modules/$(uname -r)/build
 fi
-dmesg -c >/dev/null
 make -j `nproc`
+if [ $? -ne 0 ]; then
+    exit 0
+fi
+dmesg -c >/dev/null
 make install
 make modules_install
 rm -f /usr/local/var/log/openvswitch/ovs-vswitchd.log

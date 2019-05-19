@@ -318,7 +318,7 @@ tnl_port_receive(const struct flow *flow) OVS_EXCLUDED(rwlock)
     if (!tnl_port) {
         if (!VLOG_DROP_WARN(&rl)) {
             char *flow_str = flow_to_string(flow, NULL);
-            VLOG_WARN("receive tunnel port not found (%s)", flow_str);
+            VLOG_WARN("Jikui %s %u receive tunnel port not found (%s)",__func__,__LINE__, flow_str);
             free(flow_str);
         }
         goto out;

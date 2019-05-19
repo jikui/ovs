@@ -1819,11 +1819,14 @@ dpif_netlink_operate__(struct dpif_netlink *dpif,
             if (put->stats) {
                 flow.nlmsg_flags |= NLM_F_ECHO;
                 aux->txn.reply = &aux->reply;
-            }
+            } 
+
+            VLOG_ERR("Jikui %s %u FLOW_PUT\n",__func__,__LINE__);
             dpif_netlink_flow_to_ofpbuf(&flow, &aux->request);
             break;
 
         case DPIF_OP_FLOW_DEL:
+            VLOG_ERR("Jikui %s %u FLOW_DEL\n",__func__,__LINE__);
             del = &op->flow_del;
             dpif_netlink_init_flow_del(dpif, del, &flow);
             if (del->stats) {
@@ -2065,7 +2068,7 @@ parse_flow_put(struct dpif_netlink *dpif, struct dpif_flow_put *put)
             dpif_netlink_operate__(dpif, &opp, 1);
         }
 
-        VLOG_DBG("added flow");
+        VLOG_ERR("added flow");
     } else if (err != EEXIST) {
         struct netdev *oor_netdev = NULL;
         if (err == ENOSPC && netdev_is_offload_rebalance_policy_enabled()) {
@@ -2179,12 +2182,15 @@ dpif_netlink_operate(struct dpif *dpif_, struct dpif_op **ops, size_t n_ops,
     int i = 0;
     int err = 0;
 
+    VLOG_ERR("Jikui %s %u \n",__func__,__LINE__);
     if (offload_type == DPIF_OFFLOAD_ALWAYS && !netdev_is_flow_api_enabled()) {
+    VLOG_ERR("Jikui %s %u \n",__func__,__LINE__);
         VLOG_DBG("Invalid offload_type: %d", offload_type);
         return;
     }
 
     if (offload_type != DPIF_OFFLOAD_NEVER && netdev_is_flow_api_enabled()) {
+        VLOG_ERR("Jikui %s %u \n",__func__,__LINE__);
         while (n_ops > 0) {
             count = 0;
 
@@ -2208,6 +2214,7 @@ dpif_netlink_operate(struct dpif *dpif_, struct dpif_op **ops, size_t n_ops,
                             op->error = err;
                             n_ops--;
                         }
+                        VLOG_ERR("Jikui %s %u \n",__func__,__LINE__);
                         return;
                     }
                     new_ops[count++] = op;
@@ -2221,8 +2228,11 @@ dpif_netlink_operate(struct dpif *dpif_, struct dpif_op **ops, size_t n_ops,
             dpif_netlink_operate_chunks(dpif, new_ops, count);
         }
     } else if (offload_type != DPIF_OFFLOAD_ALWAYS) {
+        VLOG_ERR("Jikui %s %u \n",__func__,__LINE__);
         dpif_netlink_operate_chunks(dpif, ops, n_ops);
     }
+    VLOG_ERR("Jikui %s %u \n",__func__,__LINE__);
+
 }
 
 #if _WIN32
@@ -2460,7 +2470,8 @@ parse_odp_packet(const struct dpif_netlink *dpif, struct ofpbuf *buf,
         [OVS_PACKET_ATTR_USERDATA] = { .type = NL_A_UNSPEC, .optional = true },
         [OVS_PACKET_ATTR_EGRESS_TUN_KEY] = { .type = NL_A_NESTED, .optional = true },
         [OVS_PACKET_ATTR_ACTIONS] = { .type = NL_A_NESTED, .optional = true },
-        [OVS_PACKET_ATTR_MRU] = { .type = NL_A_U16, .optional = true }
+        [OVS_PACKET_ATTR_MRU] = { .type = NL_A_U16, .optional = true },
+        [OVS_PACKET_ATTR_UID] = { .type = NL_A_U16, .optional = true }
     };
 
     struct ofpbuf b = ofpbuf_const_initializer(buf->data, buf->size);
@@ -2479,10 +2490,12 @@ parse_odp_packet(const struct dpif_netlink *dpif, struct ofpbuf *buf,
     int type = (genl->cmd == OVS_PACKET_CMD_MISS ? DPIF_UC_MISS
                 : genl->cmd == OVS_PACKET_CMD_ACTION ? DPIF_UC_ACTION
                 : -1);
+    if (type == DPIF_UC_MISS) {
+        VLOG_WARN("Jikui %s %u packet miss upcall.\n",__func__,__LINE__);
+    }
     if (type < 0) {
         return EINVAL;
     }
-
     /* (Re)set ALL fields of '*upcall' on successful return. */
     upcall->type = type;
     upcall->key = CONST_CAST(struct nlattr *,
@@ -2493,7 +2506,8 @@ parse_odp_packet(const struct dpif_netlink *dpif, struct ofpbuf *buf,
     upcall->out_tun_key = a[OVS_PACKET_ATTR_EGRESS_TUN_KEY];
     upcall->actions = a[OVS_PACKET_ATTR_ACTIONS];
     upcall->mru = a[OVS_PACKET_ATTR_MRU];
-
+    upcall->uid = a[OVS_PACKET_ATTR_UID];
+    VLOG_ERR("Jikui %s %u upcall id is %u\n",__func__,__LINE__,nl_attr_get_u16(upcall->uid));
     /* Allow overwriting the netlink attribute header without reallocating. */
     dp_packet_use_stub(&upcall->packet,
                     CONST_CAST(struct nlattr *,

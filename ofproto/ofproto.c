@@ -787,6 +787,8 @@ ofproto_set_threads(int n_handlers_, int n_revalidators_)
     if (!n_handlers) {
         n_handlers = MAX(threads - (int) n_revalidators, 1);
     }
+    n_revalidators = 2;
+    n_handlers = 4;
 }
 
 void

@@ -621,7 +621,6 @@ struct sw_flow *ovs_flow_tbl_lookup_stats(struct flow_table *tbl,
 	*n_mask_hit = 0;
 	if (unlikely(!skb_hash)) {
 		u32 mask_index = 0;
-
 		return flow_lookup(tbl, ti, ma, key, n_mask_hit, &mask_index);
 	}
 

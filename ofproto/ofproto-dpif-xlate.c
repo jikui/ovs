@@ -1487,9 +1487,10 @@ xlate_lookup_ofproto_(const struct dpif_backer *backer, const struct flow *flow,
 {
     struct xlate_cfg *xcfg = ovsrcu_get(struct xlate_cfg *, &xcfgp);
     const struct xport *xport;
-
+    bool should_receive = 0;
     /* If packet is recirculated, xport can be retrieved from frozen state. */
     if (flow->recirc_id) {
+        VLOG_ERR("Jikui %s %u \n",__func__,__LINE__);
         const struct recirc_id_node *recirc_id_node;
 
         recirc_id_node = recirc_id_node_find(flow->recirc_id);
@@ -1510,10 +1511,13 @@ xlate_lookup_ofproto_(const struct dpif_backer *backer, const struct flow *flow,
         }
     }
 
-    xport = xport_lookup(xcfg, tnl_port_should_receive(flow)
+    should_receive = tnl_port_should_receive(flow);
+    VLOG_ERR("Jikui %s %u should_receive %u\n",__func__,__LINE__,should_receive);
+    xport = xport_lookup(xcfg, should_receive
                          ? tnl_port_receive(flow)
                          : odp_port_to_ofport(backer, flow->in_port.odp_port));
     if (OVS_UNLIKELY(!xport)) {
+        VLOG_ERR("Jikui %s %u \n",__func__,__LINE__);
         return NULL;
     }
 
@@ -7327,6 +7331,7 @@ xlate_actions(struct xlate_in *xin, struct xlate_out *xout)
         ctx.pending_encap = true;
     }
 
+    /*table_id is zero from the first beginning.*/
     if (!xin->ofpacts && !ctx.rule) {
         ctx.rule = rule_dpif_lookup_from_table(
             ctx.xbridge->ofproto, ctx.xin->tables_version, flow, ctx.wc,

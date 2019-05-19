@@ -1137,6 +1137,7 @@ dpif_flow_dump_next(struct dpif_flow_dump_thread *thread,
     if (n > 0) {
         struct dpif_flow *f;
 
+        VLOG_ERR("Jikui %s %u  flows are dumped out.",__func__,__LINE__);
         for (f = flows; f < &flows[n]
              && should_log_flow_message(&this_module, 0); f++) {
             log_flow_message(dpif, 0, &this_module, "flow_dump",
@@ -1144,6 +1145,7 @@ dpif_flow_dump_next(struct dpif_flow_dump_thread *thread,
                              &f->ufid, &f->stats, f->actions, f->actions_len);
         }
     } else {
+        VLOG_ERR("Jikui %s %u all the flows are dumped out.",__func__,__LINE__);
         VLOG_DBG_RL(&dpmsg_rl, "%s: dumped all flows", dpif_name(dpif));
     }
     return n;
@@ -1591,6 +1593,7 @@ dpif_recv(struct dpif *dpif, uint32_t handler_id, struct dpif_upcall *upcall,
             log_operation(dpif, "recv", error);
         }
     }
+    VLOG_ERR("Jikui %s %u error %u\n",__func__,__LINE__,error);
     return error;
 }
 

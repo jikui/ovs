@@ -248,7 +248,8 @@ void ovs_dp_process_packet(struct sk_buff *skb, struct sw_flow_key *key)
 	if (unlikely(!flow)) {
 		struct dp_upcall_info upcall;
 		int error;
-
+        
+        printk("Jikui %s %u packet miss upcall.\n",__func__,__LINE__);
 		memset(&upcall, 0, sizeof(upcall));
 		upcall.cmd = OVS_PACKET_CMD_MISS;
 		upcall.portid = ovs_vport_find_upcall_portid(p, skb);
@@ -413,6 +414,7 @@ static int queue_userspace_packet(struct datapath *dp, struct sk_buff *skb,
 	size_t len;
 	unsigned int hlen;
 	int err, dp_ifindex;
+    static atomic_t upcall_index = ATOMIC_INIT(0);
 
 	dp_ifindex = get_dpifindex(dp);
 	if (!dp_ifindex)
@@ -488,7 +490,12 @@ static int queue_userspace_packet(struct datapath *dp, struct sk_buff *skb,
 		else
 			nla_nest_cancel(user_skb, nla);
 	}
-
+    atomic_inc(&upcall_index);
+    if (nla_put_u16(user_skb,OVS_PACKET_ATTR_UID,(uint16_t)atomic_read(&upcall_index))) {
+		err = -ENOBUFS;
+		goto out;
+    }
+	pad_packet(dp, user_skb);
 	/* Add OVS_PACKET_ATTR_MRU */
 	if (upcall_info->mru) {
 		if (nla_put_u16(user_skb, OVS_PACKET_ATTR_MRU,
@@ -498,6 +505,7 @@ static int queue_userspace_packet(struct datapath *dp, struct sk_buff *skb,
 		}
 		pad_packet(dp, user_skb);
 	}
+
 
 	/* Add OVS_PACKET_ATTR_LEN when packet is truncated */
 	if (cutlen > 0) {
@@ -635,6 +643,7 @@ static const struct nla_policy packet_policy[OVS_PACKET_ATTR_MAX + 1] = {
 	[OVS_PACKET_ATTR_ACTIONS] = { .type = NLA_NESTED },
 	[OVS_PACKET_ATTR_PROBE] = { .type = NLA_FLAG },
 	[OVS_PACKET_ATTR_MRU] = { .type = NLA_U16 },
+	[OVS_PACKET_ATTR_UID] = { .type = NLA_U16 },
 };
 
 static struct genl_ops dp_packet_genl_ops[] = {
@@ -908,6 +917,7 @@ static int ovs_flow_cmd_new(struct sk_buff *skb, struct genl_info *info)
 	int error;
 	bool log = !a[OVS_FLOW_ATTR_PROBE];
 
+    printk("Jikui %s %u\n",__func__,__LINE__);
 	/* Must have key and actions. */
 	error = -EINVAL;
 	if (!a[OVS_FLOW_ATTR_KEY]) {
@@ -978,6 +988,7 @@ static int ovs_flow_cmd_new(struct sk_buff *skb, struct genl_info *info)
 		rcu_assign_pointer(new_flow->sf_acts, acts);
 
 		/* Put flow in bucket. */
+        printk("Jikui put the new flow into table %s %u\n",__func__,__LINE__);
 		error = ovs_flow_tbl_insert(&dp->table, new_flow, &mask);
 		if (unlikely(error)) {
 			acts = NULL;
@@ -993,10 +1004,12 @@ static int ovs_flow_cmd_new(struct sk_buff *skb, struct genl_info *info)
 						       ufid_flags);
 			BUG_ON(error < 0);
 		}
+        printk("Jikui put the new flow into table %s %u error %u\n",__func__,__LINE__,error);
 		ovs_unlock();
 	} else {
 		struct sw_flow_actions *old_acts;
 
+        printk("Jikui put the new flow into table %s %u\n",__func__,__LINE__);
 		/* Bail out if we're not allowed to modify an existing flow.
 		 * We accept NLM_F_CREATE in place of the intended NLM_F_EXCL
 		 * because Generic Netlink treats the latter as a dump
@@ -1307,7 +1320,8 @@ static int ovs_flow_cmd_del(struct sk_buff *skb, struct genl_info *info)
 	int err;
 	bool log = !a[OVS_FLOW_ATTR_PROBE];
 	bool ufid_present;
-
+    
+    printk("Jikui %s %u\n",__func__,__LINE__);
 	ufid_present = ovs_nla_get_ufid(&ufid, a[OVS_FLOW_ATTR_UFID], log);
 	if (a[OVS_FLOW_ATTR_KEY]) {
 		ovs_match_init(&match, &key, true, NULL);
@@ -1377,7 +1391,8 @@ static int ovs_flow_cmd_dump(struct sk_buff *skb, struct netlink_callback *cb)
 	struct datapath *dp;
 	u32 ufid_flags;
 	int err;
-
+    
+    printk("Jikui %s %u\n",__func__,__LINE__);
 	err = genlmsg_parse(cb->nlh, &dp_flow_genl_family, a,
 			    OVS_FLOW_ATTR_MAX, flow_policy, NULL);
 	if (err)

@@ -798,6 +798,7 @@ recv_upcalls(struct handler *handler)
         upcall->fitness = odp_flow_key_to_flow(dupcall->key, dupcall->key_len,
                                                flow);
         if (upcall->fitness == ODP_FIT_ERROR) {
+            VLOG_ERR("Jikui %s %u break.",__func__,__LINE__);
             goto free_dupcall;
         }
 
@@ -822,6 +823,7 @@ recv_upcalls(struct handler *handler)
                 VLOG_INFO_RL(&rl, "received packet on unassociated datapath "
                              "port %"PRIu32, flow->in_port.odp_port);
             }
+            VLOG_ERR("Jikui %s %u break error %u.",__func__,__LINE__,error);
             goto free_dupcall;
         }
 
@@ -1576,12 +1578,21 @@ handle_upcalls(struct udpif *udpif, struct upcall *upcalls,
         struct ukey_op *op;
 
         if (should_install_flow(udpif, upcall)) {
+            VLOG_ERR("Jikui %s %u install flow.\n", __func__,__LINE__);
             struct udpif_key *ukey = upcall->ukey;
 
-            if (ukey_install(udpif, ukey)) {
+            if (ukey_install(udpif, ukey))
+            {
+                VLOG_ERR("Jikui %s %u DPIF_FP_CREATE install flow.\n", __func__,__LINE__); 
+                upcall->ukey_persists = true;
+                put_op_init(&ops[n_ops++], ukey, DPIF_FP_CREATE);
+            } else {
+                VLOG_ERR("Jikui %s %u DPIF_FP_CREATE failure install flow.\n", __func__,__LINE__); 
                 upcall->ukey_persists = true;
                 put_op_init(&ops[n_ops++], ukey, DPIF_FP_CREATE);
             }
+        } else {
+            VLOG_ERR("Jikui %s %u don't install flow.\n", __func__,__LINE__);
         }
 
         if (upcall->odp_actions.size) {
@@ -1812,7 +1823,8 @@ try_ukey_replace(struct umap *umap, struct udpif_key *old_ukey,
     OVS_TRY_LOCK(true, new_ukey->mutex)
 {
     bool replaced = false;
-
+    
+    VLOG_ERR("Jikui %s %u old ukey state is %u\n",__func__,__LINE__,old_ukey->state,ntohs(old_ukey->state));
     if (!ovs_mutex_trylock(&old_ukey->mutex)) {
         if (old_ukey->state == UKEY_EVICTED) {
             /* The flow was deleted during the current revalidator dump,
@@ -1860,6 +1872,9 @@ ukey_install__(struct udpif *udpif, struct udpif_key *new_ukey)
         if (old_ukey->key_len == new_ukey->key_len
             && !memcmp(old_ukey->key, new_ukey->key, new_ukey->key_len)) {
             locked = try_ukey_replace(umap, old_ukey, new_ukey);
+            if (locked == false ){
+                VLOG_ERR("Jikui %s %u locked is false\n",__func__,__LINE__);
+            }
         } else {
             struct ds ds = DS_EMPTY_INITIALIZER;
 
@@ -1872,6 +1887,7 @@ ukey_install__(struct udpif *udpif, struct udpif_key *new_ukey)
             odp_flow_key_format(new_ukey->key, new_ukey->key_len, &ds);
 
             VLOG_WARN_RL(&rl, "Conflicting ukey for flows:\n%s", ds_cstr(&ds));
+            VLOG_ERR("Jikui %s %u Conflicting ukey for flows:\n%s",__func__,__LINE__, ds_cstr(&ds));
             ds_destroy(&ds);
         }
     } else {
@@ -1881,7 +1897,8 @@ ukey_install__(struct udpif *udpif, struct udpif_key *new_ukey)
         locked = true;
     }
     ovs_mutex_unlock(&umap->mutex);
-
+    
+    VLOG_ERR("Jikui %s %u lock is %u\n",__func__,__LINE__,locked);
     return locked;
 }
 
@@ -2095,12 +2112,14 @@ xlate_key(struct udpif *udpif, const struct nlattr *key, unsigned int len,
 
     fitness = odp_flow_key_to_flow(key, len, &ctx->flow);
     if (fitness == ODP_FIT_ERROR) {
+        VLOG_ERR("Jikui %s %u\n",__func__,__LINE__);
         return EINVAL;
     }
 
     error = xlate_lookup(udpif->backer, &ctx->flow, &ofproto, NULL, NULL,
                          ctx->netflow, &ofp_in_port);
     if (error) {
+        VLOG_ERR("Jikui %s %u\n",__func__,__LINE__);
         return error;
     }
 
@@ -2174,6 +2193,7 @@ revalidate_ukey__(struct udpif *udpif, const struct udpif_key *ukey,
     netflow = NULL;
 
     if (xlate_ukey(udpif, ukey, tcp_flags, &ctx)) {
+        VLOG_ERR("Jikui %s %u\n",__func__,__LINE__);
         goto exit;
     }
     xoutp = &ctx.xout;
@@ -2191,6 +2211,7 @@ revalidate_ukey__(struct udpif *udpif, const struct udpif_key *ukey,
         ofpbuf_clear(odp_actions);
 
         if (!ofproto) {
+            VLOG_ERR("Jikui %s %u\n",__func__,__LINE__);
             goto exit;
         }
 
@@ -2201,6 +2222,7 @@ revalidate_ukey__(struct udpif *udpif, const struct udpif_key *ukey,
 
     if (odp_flow_key_to_mask(ukey->mask, ukey->mask_len, &dp_mask, &ctx.flow)
         == ODP_FIT_ERROR) {
+        VLOG_ERR("Jikui %s %u\n",__func__,__LINE__);
         goto exit;
     }
 
@@ -2210,6 +2232,7 @@ revalidate_ukey__(struct udpif *udpif, const struct udpif_key *ukey,
      * down.  Note that we do not know if the datapath has ignored any of the
      * wildcarded bits, so we may be overly conservative here. */
     if (flow_wildcards_has_extra(&dp_mask, ctx.wc)) {
+        VLOG_ERR("Jikui %s %u\n",__func__,__LINE__);
         goto exit;
     }
 
@@ -2220,6 +2243,7 @@ revalidate_ukey__(struct udpif *udpif, const struct udpif_key *ukey,
         result = UKEY_MODIFY;
         /* Transfer recirc action ID references to the caller. */
         recirc_refs_swap(recircs, &xoutp->recircs);
+        VLOG_ERR("Jikui %s %u\n",__func__,__LINE__);
         goto exit;
     }
 
@@ -2227,6 +2251,7 @@ revalidate_ukey__(struct udpif *udpif, const struct udpif_key *ukey,
 
 exit:
     if (netflow && result == UKEY_DELETE) {
+        VLOG_ERR("Jikui %s %u\n",__func__,__LINE__);
         netflow_flow_clear(netflow, &ctx.flow);
     }
     xlate_out_uninit(xoutp);
@@ -2274,6 +2299,7 @@ revalidate_ukey(struct udpif *udpif, struct udpif_key *ukey,
                     : 0);
 
     if (need_revalidate) {
+        VLOG_ERR("Jikui %s %u need revalidate %u %u\n",__func__,__LINE__,ukey->reval_seq,reval_seq);
         if (should_revalidate(udpif, push.n_packets, ukey->stats.used)) {
             if (!ukey->xcache) {
                 ukey->xcache = xlate_cache_new();
@@ -2351,6 +2377,7 @@ push_dp_ops(struct udpif *udpif, struct ukey_op *ops, size_t n_ops)
     struct dpif_op *opsp[REVALIDATE_MAX_BATCH];
     size_t i;
 
+    VLOG_ERR("Jikui %s %u\n",__func__,__LINE__);
     ovs_assert(n_ops <= REVALIDATE_MAX_BATCH);
     for (i = 0; i < n_ops; i++) {
         opsp[i] = &ops[i].dop;
@@ -2602,7 +2629,8 @@ revalidate(struct revalidator *revalidator)
         long long int now;
         size_t n_dp_flows;
         bool kill_them_all;
-
+        
+        VLOG_ERR("Jikui %s %u a new round of flow age out\n", __func__,__LINE__);
         n_dumped = dpif_flow_dump_next(dump_thread, flows, ARRAY_SIZE(flows));
         if (!n_dumped) {
             break;
@@ -2634,7 +2662,8 @@ revalidate(struct revalidator *revalidator)
             struct udpif_key *ukey;
             bool already_dumped;
             int error;
-
+            
+            VLOG_ERR("Jikui %s %u revalidator the flows\n",__func__,__LINE__);
             if (ukey_acquire(udpif, f, &ukey, &error)) {
                 if (error == EBUSY) {
                     /* Another thread is processing this flow, so don't bother
@@ -2643,12 +2672,14 @@ revalidate(struct revalidator *revalidator)
                 } else {
                     log_unexpected_flow(f, error);
                     if (error != ENOENT) {
+                        VLOG_ERR("Jikui %s %u delete the op init\n",__func__,__LINE__);
                         delete_op_init__(udpif, &ops[n_ops++], f);
                     }
                 }
                 continue;
             }
 
+            VLOG_ERR("Jikui %s %u revalidator the flows\n",__func__,__LINE__);
             already_dumped = ukey->dump_seq == dump_seq;
             if (already_dumped) {
                 /* The flow has already been handled during this flow dump
@@ -2662,6 +2693,7 @@ revalidate(struct revalidator *revalidator)
                 continue;
             }
 
+            VLOG_ERR("Jikui %s %u revalidator the flows\n",__func__,__LINE__);
             if (ukey->state <= UKEY_OPERATIONAL) {
                 /* The flow is now confirmed to be in the datapath. */
                 transition_ukey(ukey, UKEY_OPERATIONAL);
@@ -2673,14 +2705,16 @@ revalidate(struct revalidator *revalidator)
                 continue;
             }
 
+            VLOG_ERR("Jikui %s %u revalidator the flows\n",__func__,__LINE__);
             if (!used) {
                 used = ukey->created;
             }
             if (kill_them_all || (used && used < now - max_idle)) {
+                VLOG_ERR("Jikui %s %u ukey_delete %u .\n",__func__,__LINE__,kill_them_all);
                 result = UKEY_DELETE;
             } else {
-                result = revalidate_ukey(udpif, ukey, &f->stats, &odp_actions,
-                                         reval_seq, &recircs);
+                    result = revalidate_ukey(udpif, ukey, &f->stats, &odp_actions,
+                            reval_seq, &recircs);
             }
             ukey->dump_seq = dump_seq;
 
@@ -2691,6 +2725,7 @@ revalidate(struct revalidator *revalidator)
 
             if (result != UKEY_KEEP) {
                 /* Takes ownership of 'recircs'. */
+                VLOG_ERR("Jikui %s %u init delete the flow result is %u\n",__func__,__LINE__,result);
                 reval_op_init(&ops[n_ops++], result, udpif, ukey, &recircs,
                               &odp_actions);
             }

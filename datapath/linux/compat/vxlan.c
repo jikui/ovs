@@ -676,7 +676,8 @@ static int vxlan_rcv(struct sock *sk, struct sk_buff *skb)
 	__be16 protocol = htons(ETH_P_TEB);
 	bool raw_proto = false;
 	void *oiph;
-
+    
+    printk("Jikui %s %u vxlan receive.\n",__func__,__LINE__);
 	/* Need UDP and VXLAN header to be present */
 	if (!pskb_may_pull(skb, VXLAN_HLEN))
 		goto drop;
@@ -1259,7 +1260,8 @@ netdev_tx_t rpl_vxlan_xmit(struct sk_buff *skb)
 	struct net_device *dev = skb->dev;
 	struct vxlan_dev *vxlan = netdev_priv(dev);
 	const struct ip_tunnel_info *info;
-
+    
+    printk("Jikui %s %u send vxlan\n",__func__,__LINE__);
 	info = skb_tunnel_info(skb);
 	skb_reset_mac_header(skb);
 	if (vxlan->flags & VXLAN_F_COLLECT_METADATA) {

@@ -1405,6 +1405,7 @@ netdev_tc_flow_del(struct netdev *netdev OVS_UNUSED,
     int handle;
     int error;
 
+    VLOG_ERR("Jikui %s %u\n",__func__,__LINE__);
     handle = get_ufid_tc_mapping(ufid, &prio, &dev);
     if (!handle) {
         return ENOENT;

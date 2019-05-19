@@ -273,6 +273,8 @@ static int __ipgre_rcv(struct sk_buff *skb, const struct tnl_ptk_info *tpi,
 				  iph->saddr, iph->daddr, tpi->key);
 
 	if (tunnel) {
+        printk("Jikui %s %u find the tunnel %s %u(%u) %u(%u).\n",__func__,__LINE__,tunnel->dev->name,
+                tunnel->parms.iph.saddr,ntohl(tunnel->parms.iph.saddr),tunnel->parms.iph.daddr,ntohl(tunnel->parms.iph.daddr));
 		if (__iptunnel_pull_header(skb, hdr_len, tpi->proto,
 					   raw_proto, false) < 0)
 			goto drop;

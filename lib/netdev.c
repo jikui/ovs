@@ -2225,7 +2225,8 @@ netdev_flow_del(struct netdev *netdev, const ovs_u128 *ufid,
                 struct dpif_flow_stats *stats)
 {
     const struct netdev_class *class = netdev->netdev_class;
-
+    
+    VLOG_ERR("Jikui %s %u delete flow",__func__,__LINE__);
     return (class->flow_del
             ? class->flow_del(netdev, ufid, stats)
             : EOPNOTSUPP);

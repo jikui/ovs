@@ -450,6 +450,7 @@ int ovs_vport_set_upcall_portids(struct vport *vport, const struct nlattr *ids)
 		return -ENOMEM;
 
 	vport_portids->n_ids = nla_len(ids) / sizeof(u32);
+    printk("Jikui %s %u n_ids %u.\n",__func__,__LINE__,vport_portids->n_ids);
 	vport_portids->rn_ids = reciprocal_value(vport_portids->n_ids);
 	nla_memcpy(vport_portids->ids, ids, nla_len(ids));
 
@@ -509,9 +510,10 @@ u32 ovs_vport_find_upcall_portid(const struct vport *vport, struct sk_buff *skb)
 
 	if (ids->n_ids == 1 && ids->ids[0] == 0)
 		return 0;
-
+    
 	hash = skb_get_hash(skb);
 	ids_index = hash - ids->n_ids * reciprocal_divide(hash, ids->rn_ids);
+    printk("Jikui %s %u n_ids is %u ids_index is %u\n",__func__,__LINE__,ids->n_ids,ids_index);
 	return ids->ids[ids_index];
 }
 
@@ -542,7 +544,10 @@ int ovs_vport_receive(struct vport *vport, struct sk_buff *skb,
 		skb->mark = mark;
 		tun_info = NULL;
 	}
-
+    printk("Jikui %s %u receive the packet.\n",__func__,__LINE__);
+    if (tun_info) {
+        printk("Jikui %s %u tun_id is %u %u\n",__func__,__LINE__,tun_info->key.tun_id, ntohl(tun_info->key.tun_id));
+    }
 	ovs_skb_init_inner_protocol(skb);
 	skb_clear_ovs_gso_cb(skb);
 	/* Extract flow from 'skb' into 'key'. */

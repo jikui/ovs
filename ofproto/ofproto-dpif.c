@@ -4136,7 +4136,8 @@ rule_dpif_lookup_from_table(struct ofproto_dpif *ofproto,
     enum ofputil_table_miss miss_config;
     struct rule_dpif *rule;
     uint8_t next_id;
-
+    
+    VLOG_ERR("Jikui %s %u\n",__func__,__LINE__);
     /* We always unwildcard nw_frag (for IP), so they
      * need not be unwildcarded here. */
     if (flow->nw_frag & FLOW_NW_FRAG_ANY
@@ -4163,6 +4164,7 @@ rule_dpif_lookup_from_table(struct ofproto_dpif *ofproto,
                 entry->table.id = *table_id;
                 entry->table.match = true;
             }
+            VLOG_WARN("Jikui %s %u drop flag rule.",__func__,__LINE__); 
             return rule;
         }
     }
@@ -4199,7 +4201,8 @@ rule_dpif_lookup_from_table(struct ofproto_dpif *ofproto,
             entry->table.id = next_id;
             entry->table.match = (rule != NULL);
         }
-        if (rule) {
+        if (rule) { 
+            VLOG_WARN("Jikui %s %u find the rule.\n", __func__,__LINE__);
             goto out;   /* Match. */
         }
         if (honor_table_miss) {
@@ -4212,6 +4215,7 @@ rule_dpif_lookup_from_table(struct ofproto_dpif *ofproto,
         break;
     }
     /* Miss. */
+    VLOG_WARN("Jikui %s %u don't find the rule.\n", __func__,__LINE__);
     rule = ofproto->no_packet_in_rule;
     if (may_packet_in) {
         if (miss_config == OFPUTIL_TABLE_MISS_CONTINUE
@@ -4229,6 +4233,7 @@ rule_dpif_lookup_from_table(struct ofproto_dpif *ofproto,
                    connmgr_wants_packet_in_on_miss(ofproto->up.connmgr)) {
             rule = ofproto->miss_rule;
         }
+        VLOG_WARN("Jikui %s %u find the miss rule\n",__func__,__LINE__);
     }
 out:
     /* Restore port numbers, as they may have been modified above. */

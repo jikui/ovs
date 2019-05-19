@@ -691,8 +691,10 @@ struct ip_tunnel *rpl_ip_tunnel_lookup(struct ip_tunnel_net *itn,
 		if (!rpl_ip_tunnel_key_match(&t->parms, flags, key))
 			continue;
 
-		if (t->parms.link == link)
+		if (t->parms.link == link) {
+            printk("Jikui %s %u find the tunnel with parameters %u %u.\n",__func__,__LINE__,ntohl(t->parms.iph.saddr),ntohl(t->parms.iph.daddr));
 			return t;
+        }
 		else
 			cand = t;
 	}
@@ -706,8 +708,10 @@ struct ip_tunnel *rpl_ip_tunnel_lookup(struct ip_tunnel_net *itn,
 		if (!rpl_ip_tunnel_key_match(&t->parms, flags, key))
 			continue;
 
-		if (t->parms.link == link)
+		if (t->parms.link == link) {
+            printk("Jikui %s %u find the tunnel with parameters %u %u.\n",__func__,__LINE__,ntohl(t->parms.iph.saddr),ntohl(t->parms.iph.daddr));
 			return t;
+        }
 		else if (!cand)
 			cand = t;
 	}
@@ -726,9 +730,10 @@ struct ip_tunnel *rpl_ip_tunnel_lookup(struct ip_tunnel_net *itn,
 		if (!rpl_ip_tunnel_key_match(&t->parms, flags, key))
 			continue;
 
-		if (t->parms.link == link)
+		if (t->parms.link == link) {
+            printk("Jikui %s %u find the tunnel with parameters %u %u.\n",__func__,__LINE__,ntohl(t->parms.iph.saddr),ntohl(t->parms.iph.daddr));
 			return t;
-		else if (!cand)
+		 } else if (!cand)
 			cand = t;
 	}
 
@@ -742,8 +747,10 @@ struct ip_tunnel *rpl_ip_tunnel_lookup(struct ip_tunnel_net *itn,
 		    !(t->dev->flags & IFF_UP))
 			continue;
 
-		if (t->parms.link == link)
+		if (t->parms.link == link) {
+            printk("Jikui %s %u find the tunnel with parameters %u %u.\n",__func__,__LINE__,ntohl(t->parms.iph.saddr),ntohl(t->parms.iph.daddr));
 			return t;
+        }
 		else if (!cand)
 			cand = t;
 	}

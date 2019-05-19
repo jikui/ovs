@@ -43,7 +43,8 @@ static struct vport_ops ovs_netdev_vport_ops;
 void netdev_port_receive(struct sk_buff *skb, struct ip_tunnel_info *tun_info)
 {
 	struct vport *vport;
-
+    
+    printk("Jikui %s %u receve the packet.\n",__func__,__LINE__);
 	vport = ovs_netdev_get_vport(skb->dev);
 	if (unlikely(!vport))
 		goto error;
