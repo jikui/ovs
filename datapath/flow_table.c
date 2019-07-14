@@ -617,7 +617,9 @@ struct sw_flow *ovs_flow_tbl_lookup_stats(struct flow_table *tbl,
 	struct sw_flow *flow;
 	u32 hash;
 	int seg;
+    
 
+    printk("Jikui %s %u skb hash %u\n",__func__,__LINE__,skb_hash);
 	*n_mask_hit = 0;
 	if (unlikely(!skb_hash)) {
 		u32 mask_index = 0;

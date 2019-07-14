@@ -2309,7 +2309,6 @@ dpif_netlink_refresh_channels(struct dpif_netlink *dpif, uint32_t n_handlers)
 
     for (i = 0; i < n_handlers; i++) {
         struct dpif_handler *handler = &dpif->handlers[i];
-
         handler->event_offset = handler->n_events = 0;
     }
 

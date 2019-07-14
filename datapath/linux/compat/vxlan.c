@@ -676,6 +676,7 @@ static int vxlan_rcv(struct sock *sk, struct sk_buff *skb)
 	__be16 protocol = htons(ETH_P_TEB);
 	bool raw_proto = false;
 	void *oiph;
+    struct iphdr *nh;
     
     printk("Jikui %s %u vxlan receive.\n",__func__,__LINE__);
 	/* Need UDP and VXLAN header to be present */
@@ -722,10 +723,14 @@ static int vxlan_rcv(struct sock *sk, struct sk_buff *skb)
 		raw_proto = true;
 	}
 
+    nh = ip_hdr(skb);
+    printk("Jikui %s %u src %u(%u) dst %u(%u)\n",__func__,__LINE__,nh->saddr,htonl(nh->saddr),nh->daddr,htonl(nh->daddr));
 	if (__iptunnel_pull_header(skb, VXLAN_HLEN, protocol, raw_proto,
 				   !net_eq(vxlan->net, dev_net(vxlan->dev))))
 			goto drop;
 
+    nh = ip_hdr(skb);
+    printk("Jikui %s %u src %u(%u) dst %u(%u)\n",__func__,__LINE__,nh->saddr,htonl(nh->saddr),nh->daddr,htonl(nh->daddr));
 	if (vxlan_collect_metadata(vs)) {
 		__be32 vni = vxlan_vni(vxlan_hdr(skb)->vx_vni);
 		struct metadata_dst *tun_dst;
@@ -738,6 +743,7 @@ static int vxlan_rcv(struct sock *sk, struct sk_buff *skb)
 		if (!tun_dst)
 			goto drop;
 
+        printk("Jikui %s %u vni is %u\n",__func__,__LINE__,ntohl(vni));
 		md = ip_tunnel_info_opts(&tun_dst->u.tun_info);
 
 		ovs_skb_dst_set(skb, (struct dst_entry *)tun_dst);
@@ -767,33 +773,44 @@ static int vxlan_rcv(struct sock *sk, struct sk_buff *skb)
 		goto drop;
 	}
 
-	if (!raw_proto) {
-		if (!vxlan_set_mac(vxlan, vs, skb))
-			goto drop;
-		skb_reset_mac_header(skb);
-		skb->protocol = eth_type_trans(skb, vxlan->dev);
-		skb_postpull_rcsum(skb, eth_hdr(skb), ETH_HLEN);
+    if (!raw_proto) {
+        nh = ip_hdr(skb);
+        printk("Jikui %s %u src %u(%u) dst %u(%u)\n",__func__,__LINE__,nh->saddr,htonl(nh->saddr),nh->daddr,htonl(nh->daddr));
+        if (!vxlan_set_mac(vxlan, vs, skb))
+            goto drop;
+        skb_reset_mac_header(skb);
+        skb->protocol = eth_type_trans(skb, vxlan->dev);
+        skb_postpull_rcsum(skb, eth_hdr(skb), ETH_HLEN);
 	} else {
 		skb_reset_mac_header(skb);
 		skb->dev = vxlan->dev;
 		skb->pkt_type = PACKET_HOST;
 	}
 
-	oiph = skb_network_header(skb);
-	skb_reset_network_header(skb);
+    nh = ip_hdr(skb);
+    printk("Jikui %s %u src %u(%u) dst %u(%u)\n",__func__,__LINE__,nh->saddr,htonl(nh->saddr),nh->daddr,htonl(nh->daddr));
+    oiph = skb_network_header(skb);
+    skb_reset_network_header(skb);
 
+    nh = ip_hdr(skb);
+    printk("Jikui %s %u src %u(%u) dst %u(%u)\n",__func__,__LINE__,nh->saddr,htonl(nh->saddr),nh->daddr,htonl(nh->daddr));
 	if (!vxlan_ecn_decapsulate(vs, oiph, skb)) {
 		++vxlan->dev->stats.rx_frame_errors;
 		++vxlan->dev->stats.rx_errors;
 		goto drop;
 	}
 
+    nh = ip_hdr(skb);
+    printk("Jikui %s %u src %u(%u) dst %u(%u)\n",__func__,__LINE__,nh->saddr,htonl(nh->saddr),nh->daddr,htonl(nh->daddr));
 	stats = this_cpu_ptr(vxlan->dev->tstats);
 	u64_stats_update_begin(&stats->syncp);
 	stats->rx_packets++;
 	stats->rx_bytes += skb->len;
 	u64_stats_update_end(&stats->syncp);
-
+    
+    if (skb_tunnel_info(skb)) {
+        printk("Jikui %s tunnel is filled.",__func__);
+    }
 	netdev_port_receive(skb, skb_tunnel_info(skb));
 	return 0;
 

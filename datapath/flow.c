@@ -571,7 +571,10 @@ static int key_extract(struct sk_buff *skb, struct sw_flow_key *key)
 {
 	int error;
 	struct ethhdr *eth;
+    struct iphdr *nh;
 
+    nh = ip_hdr(skb);
+    printk("Jikui %s %u src %u(%u) dst %u(%u)\n",__func__,__LINE__,nh->saddr,htonl(nh->saddr),nh->daddr,htonl(nh->daddr));
 	/* Flags are always used as part of stats */
 	key->tp.flags = 0;
 
@@ -617,6 +620,8 @@ static int key_extract(struct sk_buff *skb, struct sw_flow_key *key)
 
 	skb_reset_mac_len(skb);
 
+    nh = ip_hdr(skb);
+    printk("Jikui %s %u src %u(%u) dst %u(%u)\n",__func__,__LINE__,nh->saddr,htonl(nh->saddr),nh->daddr,htonl(nh->daddr));
 	/* Network layer. */
 	if (key->eth.type == htons(ETH_P_IP)) {
 		struct iphdr *nh;
@@ -877,6 +882,7 @@ int ovs_flow_key_extract(const struct ip_tunnel_info *tun_info,
 	key->recirc_id = 0;
 
 	err = key_extract(skb, key);
+    printk("Jikui %s %u src %u dst %u tunnel_id %u\n",__func__,__LINE__,htonl(key->ipv4.addr.src),htonl(key->ipv4.addr.dst),htonl(key->tun_key.tun_id));
 	if (!err)
 		ovs_ct_fill_key(skb, key);   /* Must be after key_extract(). */
 	return err;

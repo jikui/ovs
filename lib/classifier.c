@@ -528,7 +528,7 @@ classifier_replace(struct classifier *cls, const struct cls_rule *rule,
     uint32_t basis;
     uint32_t hash;
     unsigned int i;
-
+    
     /* 'new' is initially invisible to lookups. */
     new = cls_match_alloc(rule, version, conjs, n_conjs);
     ovsrcu_set(&CONST_CAST(struct cls_rule *, rule)->cls_match, new);
@@ -2099,7 +2099,6 @@ trie_insert_prefix(rcu_trie_ptr *edge, const ovs_be32 *prefix, int mlen)
             return;
         }
         /* Full match so far. */
-
         if (ofs == mlen) {
             /* Full match at the current node, rule needs to be added here. */
             node->n_rules++;

@@ -2554,6 +2554,9 @@ update_learning_table(const struct xlate_ctx *ctx,
         xlate_report_debug(ctx, OFT_DETAIL, "learned that "ETH_ADDR_FMT" is "
                            "on port %s in VLAN %d",
                            ETH_ADDR_ARGS(dl_src), in_xbundle->name, vlan);
+        VLOG_ERR(ctx, OFT_DETAIL, "learned that "ETH_ADDR_FMT" is "
+                           "on port %s in VLAN %d",
+                           ETH_ADDR_ARGS(dl_src), in_xbundle->name, vlan);
     }
 }
 
@@ -2870,6 +2873,7 @@ xlate_normal_flood(struct xlate_ctx *ctx, struct xbundle *in_xbundle,
 {
     struct xbundle *xbundle;
 
+    VLOG_ERR("Jikui %s %u flood the packet.\n",__func__,__LINE__);
     LIST_FOR_EACH (xbundle, list_node, &ctx->xbridge->xbundles) {
         if (xbundle != in_xbundle
             && xbundle->ofbundle != in_xbundle->ofbundle
@@ -2877,6 +2881,7 @@ xlate_normal_flood(struct xlate_ctx *ctx, struct xbundle *in_xbundle,
             && xbundle->floodable
             && !xbundle_mirror_out(ctx->xbridge, xbundle)) {
             output_normal(ctx, xbundle, xvlan);
+            VLOG_ERR("Jikui %s %u flood the packet name is %s.\n",__func__,__LINE__,xbundle->name);
         }
     }
     ctx->nf_output_iface = NF_OUT_FLOOD;
@@ -3098,6 +3103,7 @@ xlate_normal(struct xlate_ctx *ctx)
             if (mac_xbundle
                 && mac_xbundle != in_xbundle
                 && mac_xbundle->ofbundle != in_xbundle->ofbundle) {
+                VLOG_ERR("Jikui %s %d forwarding to learned port %s.",__func__,__LINE__,mac_xbundle->name);
                 xlate_report(ctx, OFT_DETAIL, "forwarding to learned port");
                 output_normal(ctx, mac_xbundle, &xvlan);
             } else if (!mac_xbundle) {
@@ -5070,6 +5076,7 @@ xlate_output_action(struct xlate_ctx *ctx, ofp_port_t port,
 
     ctx->nf_output_iface = NF_OUT_DROP;
 
+    VLOG_ERR("Jikui %s %u port %x \n",__func__,__LINE__,port);
     switch (port) {
     case OFPP_IN_PORT:
         compose_output_action(ctx, ctx->xin->flow.in_port.ofp_port, NULL,
@@ -6443,6 +6450,7 @@ do_xlate_actions(const struct ofpact *ofpacts, size_t ofpacts_len,
         return;
     }
 
+    VLOG_ERR("Jikui %s %u \n",__func__,__LINE__);
     OFPACT_FOR_EACH (a, ofpacts, ofpacts_len) {
         struct ofpact_controller *controller;
         const struct ofpact_metadata *metadata;
@@ -7393,6 +7401,7 @@ xlate_actions(struct xlate_in *xin, struct xlate_out *xout)
             const struct ofpact *ofpacts;
             size_t ofpacts_len;
 
+            VLOG_ERR("Jikui %s %u \n",__func__,__LINE__);
             if (xin->ofpacts) {
                 ofpacts = xin->ofpacts;
                 ofpacts_len = xin->ofpacts_len;
