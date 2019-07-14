@@ -79,3 +79,4 @@ testsuite.tmp.orig
 /cxx-check
 build.sh
 .gitignore
+.git-credentials
