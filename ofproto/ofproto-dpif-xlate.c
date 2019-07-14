@@ -2969,6 +2969,8 @@ xlate_normal(struct xlate_ctx *ctx)
         && flow->packet_type == htonl(PT_ETH)
         && in_port->pt_mode != NETDEV_PT_LEGACY_L3
     ) {
+        VLOG_ERR("Jikui %s %d update fdb\n",__func__,__LINE__);
+        
         update_learning_table(ctx, in_xbundle, flow->dl_src, vlan,
                               is_grat_arp);
     }
