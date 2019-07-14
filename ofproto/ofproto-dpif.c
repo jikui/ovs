@@ -5224,16 +5224,18 @@ ofproto_unixctl_fdb_show(struct unixctl_conn *conn, int argc OVS_UNUSED,
         return;
     }
 
-    ds_put_cstr(&ds, " port  VLAN  MAC                Age\n");
+    ds_put_cstr(&ds, " name  port  VLAN  MAC                Age\n");
     ovs_rwlock_rdlock(&ofproto->ml->rwlock);
     LIST_FOR_EACH (e, lru_node, &ofproto->ml->lrus) {
         struct ofbundle *bundle = mac_entry_get_port(ofproto->ml, e);
-        char name[OFP10_MAX_PORT_NAME_LEN];
+        char port[OFP10_MAX_PORT_NAME_LEN];
+        char name[OFP10_MAX_PORT_NAME_LEN] = {0};
 
         ofputil_port_to_string(ofbundle_get_a_port(bundle)->up.ofp_port,
-                               NULL, name, sizeof name);
-        ds_put_format(&ds, "%5s  %4d  "ETH_ADDR_FMT"  %3d\n",
-                      name, e->vlan, ETH_ADDR_ARGS(e->mac),
+                               NULL, port, sizeof port);
+        strncpy(name,netdev_get_name(ofbundle_get_a_port(bundle)->up.netdev),sizeof name);
+        ds_put_format(&ds, "%5s %5s %4d  "ETH_ADDR_FMT"  %3d\n",
+                      name,port, e->vlan, ETH_ADDR_ARGS(e->mac),
                       mac_entry_age(ofproto->ml, e));
     }
     ovs_rwlock_unlock(&ofproto->ml->rwlock);
