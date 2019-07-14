@@ -43,13 +43,22 @@ static struct vport_ops ovs_netdev_vport_ops;
 void netdev_port_receive(struct sk_buff *skb, struct ip_tunnel_info *tun_info)
 {
 	struct vport *vport;
+    struct iphdr *nh;
     
-    printk("Jikui %s %u receve the packet.\n",__func__,__LINE__);
+    printk("Jikui %s %u receve the packet tun_info %p.\n",__func__,__LINE__,tun_info);
 	vport = ovs_netdev_get_vport(skb->dev);
 	if (unlikely(!vport))
 		goto error;
 
-	if (unlikely(skb_warn_if_lro(skb)))
+    nh = ip_hdr(skb);
+    printk("Jikui %s %u src %u(%u) dst %u(%u)\n",__func__,__LINE__,nh->saddr,htonl(nh->saddr),nh->daddr,htonl(nh->daddr));
+	printk("Jikui %s %u src %u(%u) dst %u(%u) tun_id %u(%u)\n",__func__,__LINE__, tun_info->key.u.ipv4.src,
+            htonl(tun_info->key.u.ipv4.src),
+            tun_info->key.u.ipv4.dst, 
+            htonl(tun_info->key.u.ipv4.dst),
+            tun_info->key.tun_id,
+            htonl(tun_info->key.tun_id));
+    if (unlikely(skb_warn_if_lro(skb)))
 		goto error;
 
 	/* Make our own copy of the packet.  Otherwise we will mangle the

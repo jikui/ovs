@@ -858,7 +858,6 @@ nl_sock_transact_multiple__(struct nl_sock *sock,
         error = sendmsg(sock->fd, &msg, 0) < 0 ? errno : 0;
     } while (error == EINTR);
     
-    VLOG_ERR("Jikui %s %u send the request to datapath\n",__func__,__LINE__);
     for (i = 0; i < n; i++) {
         struct nl_transaction *txn = transactions[i];
 

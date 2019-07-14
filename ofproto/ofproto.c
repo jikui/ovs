@@ -8823,7 +8823,8 @@ oftable_init(struct oftable *table)
 
     classifier_set_prefix_fields(&table->cls, default_prefix_fields,
                                  ARRAY_SIZE(default_prefix_fields));
-
+    
+    VLOG_ERR("Jikui %s %u n_tries %u\n",__func__,__LINE__,table->cls.n_tries);
     atomic_init(&table->n_matched, 0);
     atomic_init(&table->n_missed, 0);
 }

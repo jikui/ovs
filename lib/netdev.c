@@ -173,6 +173,9 @@ netdev_run(void)
 
     struct netdev_registered_class *rc;
     CMAP_FOR_EACH (rc, cmap_node, &netdev_classes) {
+        if (rc->class) {
+            VLOG_WARN("netdev class is: %s %s",__func__,rc->class->type);
+        }
         if (rc->class->run) {
             rc->class->run(rc->class);
         }

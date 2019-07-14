@@ -513,7 +513,7 @@ u32 ovs_vport_find_upcall_portid(const struct vport *vport, struct sk_buff *skb)
     
 	hash = skb_get_hash(skb);
 	ids_index = hash - ids->n_ids * reciprocal_divide(hash, ids->rn_ids);
-    printk("Jikui %s %u n_ids is %u ids_index is %u\n",__func__,__LINE__,ids->n_ids,ids_index);
+    printk("Jikui %s %u n_ids is %u ids_index is %u port id is %u\n",__func__,__LINE__,ids->n_ids,ids_index,ids->ids[ids_index]);
 	return ids->ids[ids_index];
 }
 

@@ -228,6 +228,7 @@ static inline void ip_tunnel_key_init(struct ip_tunnel_key *key,
 				      __be16 tp_src, __be16 tp_dst,
 				      __be64 tun_id, __be16 tun_flags)
 {
+    printk("Jikui %s %u saddr %u daddr %u.\n",__func__,__LINE__,ntohl(saddr),ntohl(daddr));
 	key->tun_id = tun_id;
 	key->u.ipv4.src = saddr;
 	key->u.ipv4.dst = daddr;

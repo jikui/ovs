@@ -284,16 +284,22 @@ int ovs_dp_upcall(struct datapath *dp, struct sk_buff *skb,
 {
 	struct dp_stats_percpu *stats;
 	int err;
+    struct iphdr *nh;
 
 	if (upcall_info->portid == 0) {
 		err = -ENOTCONN;
 		goto err;
 	}
 
-	if (!skb_is_gso(skb))
+    nh = ip_hdr(skb);
+    printk("Jikui %s %u src %u(%u) dst %u(%u)\n",__func__,__LINE__,nh->saddr,htonl(nh->saddr),nh->daddr,htonl(nh->daddr));
+	if (!skb_is_gso(skb)) {
+        printk("Jikui %s gso is disabled.\n",__func__);
 		err = queue_userspace_packet(dp, skb, key, upcall_info, cutlen);
-	else
+    } else {
+        printk("Jikui %s gso is enabled.\n",__func__);
 		err = queue_gso_packets(dp, skb, key, upcall_info, cutlen);
+    }
 	if (err)
 		goto err;
 
@@ -561,6 +567,8 @@ static int ovs_packet_cmd_execute(struct sk_buff *skb, struct genl_info *info)
 	int err;
 	bool log = !a[OVS_PACKET_ATTR_PROBE];
 
+
+    printk("Jikui %s %u\n",__func__,__LINE__);
 	err = -EINVAL;
 	if (!a[OVS_PACKET_ATTR_PACKET] || !a[OVS_PACKET_ATTR_KEY] ||
 	    !a[OVS_PACKET_ATTR_ACTIONS])

@@ -1586,11 +1586,14 @@ handle_upcalls(struct udpif *udpif, struct upcall *upcalls,
                 VLOG_ERR("Jikui %s %u DPIF_FP_CREATE install flow.\n", __func__,__LINE__); 
                 upcall->ukey_persists = true;
                 put_op_init(&ops[n_ops++], ukey, DPIF_FP_CREATE);
-            } else {
+            } 
+#if 0
+            else {
                 VLOG_ERR("Jikui %s %u DPIF_FP_CREATE failure install flow.\n", __func__,__LINE__); 
                 upcall->ukey_persists = true;
                 put_op_init(&ops[n_ops++], ukey, DPIF_FP_CREATE);
             }
+#endif
         } else {
             VLOG_ERR("Jikui %s %u don't install flow.\n", __func__,__LINE__);
         }
