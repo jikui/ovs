@@ -7662,7 +7662,7 @@ xlate_mac_learning_update(const struct ofproto_dpif *ofproto,
     if (!xbundle) {
         return;
     }
-
+    VLOG_ERR("Jikui %s %d update the mac table for mac %s vlan %u\n",__func__,__LINE__,ETH_ADDR_ARGS(dl_src),vlan);
     update_learning_table__(xbridge, xbundle, dl_src, vlan, is_grat_arp);
 }
 
