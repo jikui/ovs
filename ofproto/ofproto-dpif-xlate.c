@@ -2554,6 +2554,9 @@ update_learning_table(const struct xlate_ctx *ctx,
         xlate_report_debug(ctx, OFT_DETAIL, "learned that "ETH_ADDR_FMT" is "
                            "on port %s in VLAN %d",
                            ETH_ADDR_ARGS(dl_src), in_xbundle->name, vlan);
+        VLOG_ERR(ctx, OFT_DETAIL, "learned that "ETH_ADDR_FMT" is "
+                           "on port %s in VLAN %d",
+                           ETH_ADDR_ARGS(dl_src), in_xbundle->name, vlan);
     }
 }
 
