@@ -3,7 +3,7 @@
 if [ $# -gt 0 ]; then
     echo "Build from scratch."
     ./boot.sh
-    ./configure --with-linux=/lib/modules/$(uname -r)/build
+    ./configure --with-linux=/lib/modules/$(uname -r)/build  --with-dpdk=$DPDK_BUILD
 fi
 make -j `nproc`
 if [ $? -ne 0 ]; then
@@ -16,4 +16,4 @@ rm -f /usr/local/var/log/openvswitch/ovs-vswitchd.log
 ovs-ctl force-reload-kmod
 ip link set dev ovs-system up
 ip link set dev br0 up
-ip addr add 1.2.3.4/24 dev br0
+ip addr add 1.2.3.5/24 dev br0

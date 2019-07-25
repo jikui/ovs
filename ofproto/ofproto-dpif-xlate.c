@@ -2554,8 +2554,8 @@ update_learning_table(const struct xlate_ctx *ctx,
         xlate_report_debug(ctx, OFT_DETAIL, "learned that "ETH_ADDR_FMT" is "
                            "on port %s in VLAN %d",
                            ETH_ADDR_ARGS(dl_src), in_xbundle->name, vlan);
-        VLOG_ERR(ctx, OFT_DETAIL, "learned that "ETH_ADDR_FMT" is "
-                           "on port %s in VLAN %d",
+        VLOG_ERR( "Jikui %s %u learned that "ETH_ADDR_FMT" is "
+                           "on port %s in VLAN %d",__func__,__LINE__,
                            ETH_ADDR_ARGS(dl_src), in_xbundle->name, vlan);
     }
 }
@@ -2969,6 +2969,8 @@ xlate_normal(struct xlate_ctx *ctx)
         && flow->packet_type == htonl(PT_ETH)
         && in_port->pt_mode != NETDEV_PT_LEGACY_L3
     ) {
+        VLOG_ERR("Jikui %s %d update fdb\n",__func__,__LINE__);
+        
         update_learning_table(ctx, in_xbundle, flow->dl_src, vlan,
                               is_grat_arp);
     }
@@ -7662,7 +7664,7 @@ xlate_mac_learning_update(const struct ofproto_dpif *ofproto,
     if (!xbundle) {
         return;
     }
-    VLOG_ERR("Jikui %s %d update the mac table for mac %s vlan %u\n",__func__,__LINE__,ETH_ADDR_ARGS(dl_src),vlan);
+    VLOG_ERR("Jikui %s %d update the mac table for mac "ETH_ADDR_FMT" vlan %u\n",__func__,__LINE__,ETH_ADDR_ARGS(dl_src),vlan);
     update_learning_table__(xbridge, xbundle, dl_src, vlan, is_grat_arp);
 }
 

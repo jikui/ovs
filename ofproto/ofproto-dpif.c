@@ -4137,7 +4137,7 @@ rule_dpif_lookup_from_table(struct ofproto_dpif *ofproto,
     struct rule_dpif *rule;
     uint8_t next_id;
     
-    VLOG_ERR("Jikui %s %u\n",__func__,__LINE__);
+    VLOG_ERR("Jikui %s %u table_id is %u\n",__func__,__LINE__,*table_id);
     /* We always unwildcard nw_frag (for IP), so they
      * need not be unwildcarded here. */
     if (flow->nw_frag & FLOW_NW_FRAG_ANY
@@ -4164,6 +4164,7 @@ rule_dpif_lookup_from_table(struct ofproto_dpif *ofproto,
                 entry->table.id = *table_id;
                 entry->table.match = true;
             }
+            VLOG_WARN("Jikui tableid is %u\n",*table_id);
             VLOG_WARN("Jikui %s %u drop flag rule.",__func__,__LINE__); 
             return rule;
         }
